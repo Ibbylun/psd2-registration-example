@@ -7,10 +7,13 @@ import io.restassured.RestAssured;
 import io.restassured.config.EncoderConfig;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+
+import org.bouncycastle.jcajce.provider.asymmetric.X509;
 import org.bouncycastle.util.encoders.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sun.security.provider.X509Factory;
+import java.security.cert.X509Certificate;
+import java.security.cert.X509Extension;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -66,7 +69,6 @@ public class SandboxRegistrator {
     }
 
     public void register() throws Throwable {
-
         response = given()
                 .config(RestAssured.config().encoderConfig(EncoderConfig.encoderConfig().encodeContentTypeAs("application/jwt", ContentType.TEXT)))
                 .trustStore(loadTruststore())
@@ -169,7 +171,7 @@ public class SandboxRegistrator {
         char[] password = this.keystorePassword.toCharArray();
         ks.load(null, password);
 
-        byte [] certDecoded = Base64.decode(tppClientCert.replaceAll(X509Factory.BEGIN_CERT + "\n", "").replaceAll("\n" + X509Factory.END_CERT + "\n", ""));
+        byte [] certDecoded = Base64.decode(tppClientCert);
         Certificate cert = CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certDecoded));
 
         KeyStore.PrivateKeyEntry privateKeyEntry = new KeyStore.PrivateKeyEntry(tppPrivateCertKey, new Certificate[]{cert});
